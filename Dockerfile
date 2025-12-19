@@ -1,4 +1,4 @@
-FROM rust:1.86.0-slim-bullseye as base
+FROM rust:1.86.0-slim-bullseye AS base
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libudev-dev \
     pkg-config \
@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && cargo install cargo-chef
 
-FROM base as planner
+FROM base AS planner
 WORKDIR /app
 COPY . .
 RUN --mount=type=cache,target=/app/target/ \
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
     cargo chef prepare --recipe-path recipe.json
 
-FROM base as builder
+FROM base AS builder
 WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
 RUN --mount=type=cache,target=/app/target/ \
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/app/target/ \
     mkdir -p /output && \
     cp /app/target/release/cli /output/
 
-FROM debian:bullseye-slim as runtime
+FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libudev1 \
